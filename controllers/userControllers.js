@@ -54,5 +54,19 @@ const authUser=asyncHandler(async(req,res)=>{
     }
 })
 
+const allUsers=asyncHandler(async(req,res)=>{
+    const keyword=req.query.keyword?{
+        $or:[
+            {nickname:{$regex:req.query.keyword,$options:"i"}},
+            {username:{$regex:req.query.keyword,$options:"i"}}
+        ]
+    }:{};
+    
+    const users=await User.find(keyword).find({_id:{$ne:req.user._id}})
+    res.send(users);
+})
 
-module.exports={registerUser,authUser}
+
+module.exports={registerUser,authUser,allUsers}
+
+//.find({_id:{$ne:req.user._id}})
