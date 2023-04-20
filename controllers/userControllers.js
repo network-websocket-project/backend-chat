@@ -39,7 +39,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const authMe = asyncHandler(async (req, res) => {
   const { _id } = req.user;
-  const user = await User.findOne({ _id});
+  const user = await User.findOne({ _id });
   if (user) {
     res.json({
       id: user._id,
@@ -85,6 +85,15 @@ const allUsers = asyncHandler(async (req, res) => {
   res.send(users);
 });
 
-module.exports = { registerUser, authUser, allUsers, authMe };
+const editUser = asyncHandler(async (req, res) => {
+  const { nickname } = req.body;
+  const { _id } = req.user.id;
+  const user = await User.findOne({ _id });
+  user.nickname = nickname;
+  await user.save();
+  res.send(user);
+});
+
+module.exports = { registerUser, authUser, allUsers, authMe, editUser };
 
 //.find({_id:{$ne:req.user._id}})
