@@ -48,6 +48,51 @@ const accessChat = asyncHandler(async (req, res) => {
   }
 });
 
+const fetchAllMyGroupChat = asyncHandler(async (req, res) => {
+  try {
+    Chat.find({
+      users: { $elemMatch: { $eq: req.user._id } },
+      isGroupChat: true,
+    })
+      .populate("users", "-password")
+      .populate("groupAdmin", "-password")
+      .populate("latestMessage")
+      .sort({ updatedAt: -1 })
+      .then(async (results) => {
+        results = await User.populate(results, {
+          path: "latestMessage.sender",
+          select: "nickname avatar username",
+        });
+        res.status(200).send(results);
+      });
+  } catch (err) {
+    res.status(400);
+    throw new Error(err.message);
+  }
+});
+
+const fetchAllGroupChat = asyncHandler(async (req, res) => {
+  try {
+    Chat.find({
+      isGroupChat: true,
+    })
+      .populate("users", "-password")
+      .populate("groupAdmin", "-password")
+      .populate("latestMessage")
+      .sort({ updatedAt: -1 })
+      .then(async (results) => {
+        results = await User.populate(results, {
+          path: "latestMessage.sender",
+          select: "nickname avatar username",
+        });
+        res.status(200).send(results);
+      });
+  } catch (err) {
+    res.status(400);
+    throw new Error(err.message);
+  }
+});
+
 const fetchChat = asyncHandler(async (req, res) => {
   try {
     Chat.find({ users: { $elemMatch: { $eq: req.user._id } } })
@@ -152,4 +197,6 @@ module.exports = {
   createGroupChat,
   renameGroup,
   joinGroup,
+  fetchAllMyGroupChat,
+  fetchAllGroupChat
 };

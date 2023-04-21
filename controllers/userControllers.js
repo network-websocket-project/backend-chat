@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const User = require("../models/userModel");
 const generateToken = require("../config/generateToken");
+const bcrypt = require("bcryptjs");
 
 const registerUser = asyncHandler(async (req, res) => {
   const { nickname, username, password, avatar } = req.body;
@@ -16,11 +17,11 @@ const registerUser = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error("User already exists");
   }
-
+  const hashedPw = await bcrypt.hash(password, 12);
   const user = await User.create({
     nickname,
     username,
-    password,
+    password: hashedPw,
     avatar,
   });
   if (user) {
@@ -40,6 +41,8 @@ const registerUser = asyncHandler(async (req, res) => {
 const authMe = asyncHandler(async (req, res) => {
   const { _id } = req.user;
   const user = await User.findOne({ _id });
+  user.isOnline = true;
+  await user.save();
   if (user) {
     res.json({
       id: user._id,
@@ -57,7 +60,10 @@ const authMe = asyncHandler(async (req, res) => {
 const authUser = asyncHandler(async (req, res) => {
   const { username, password } = req.body;
   const user = await User.findOne({ username });
+  user.isOnline = true;
+  await user.save();
   if (user && (await user.matchPassword(password))) {
+    console.log(user);
     res.json({
       id: user._id,
       nickname: user.nickname,
@@ -71,7 +77,14 @@ const authUser = asyncHandler(async (req, res) => {
   }
 });
 
-const allUsers = asyncHandler(async (req, res) => {
+const logout = asyncHandler(async (req, res) => {
+  const user = await User.findOne({ _id: req.user._id });
+  user.isOnline = false;
+  await user.save();
+  res.status(200).json({ message: "Successfully logged out" });
+});
+
+const searchAllUsers = asyncHandler(async (req, res) => {
   const keyword = req.query.keyword
     ? {
         $or: [
@@ -80,8 +93,13 @@ const allUsers = asyncHandler(async (req, res) => {
         ],
       }
     : {};
-
+  console.log(req.user);
   const users = await User.find(keyword).find({ _id: { $ne: req.user._id } });
+  res.send(users);
+});
+
+const getAllUsers = asyncHandler(async (req, res) => {
+  const users = await User.find({ _id: { $ne: req.user._id } });
   res.send(users);
 });
 
@@ -94,6 +112,14 @@ const editUser = asyncHandler(async (req, res) => {
   res.send(user);
 });
 
-module.exports = { registerUser, authUser, allUsers, authMe, editUser };
+module.exports = {
+  registerUser,
+  authUser,
+  searchAllUsers,
+  authMe,
+  editUser,
+  getAllUsers,
+  logout,
+};
 
 //.find({_id:{$ne:req.user._id}})
