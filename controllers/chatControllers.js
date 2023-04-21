@@ -115,34 +115,35 @@ const fetchChat = asyncHandler(async (req, res) => {
 
 const createGroupChat = asyncHandler(async (req, res) => {
   if (!req.body.name) {
-    return res.status(400).send({ message: "Please fill all the fields" });
-  }
+    if (!req.body.name) {
+      return res.status(400).send({ message: "Please fill all the fields" });
+    }
 
 
-  // if(users.length<2){
+    // if(users.length<2){
 
-  // }
-  const users = [];
-  users.push(req.user);
+    // }
+    const users = [];
+    users.push(req.user);
 
-  try {
-    const groupChat = await Chat.create({
-      chatName: req.body.name,
-      users: users,
-      isGroupChat: true,
-      groupAdmin: req.user,
-    });
+    try {
+      const groupChat = await Chat.create({
+        chatName: req.body.name,
+        users: users,
+        isGroupChat: true,
+        groupAdmin: req.user,
+      });
 
-    const fullGroupChat = await Chat.findOne({ _id: groupChat._id })
-      .populate("users", "-password")
-      .populate("groupAdmin", "-password");
+      const fullGroupChat = await Chat.findOne({ _id: groupChat._id })
+        .populate("users", "-password")
+        .populate("groupAdmin", "-password");
 
-    res.status(200).json(fullGroupChat);
-  } catch (err) {
-    res.status(400);
-    throw new Error(err.message);
-  }
-});
+      res.status(200).json(fullGroupChat);
+    } catch (err) {
+      res.status(400);
+      throw new Error(err.message);
+    }
+  });
 
 const renameGroup = asyncHandler(async (req, res) => {
   const { chatId, chatName } = req.body;
