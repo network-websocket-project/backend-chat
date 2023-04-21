@@ -52,6 +52,7 @@ io.on("connection", (socket) => {
 
   socket.on("setup", (userData) => {
     socket.join(userData._id);
+    console.log(userData._id);
     socket.emit("connected");
   });
 
@@ -64,7 +65,7 @@ io.on("connection", (socket) => {
   socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
   socket.on("new message", (newMessageReceived) => {
     var chat = newMessageReceived.chat;
-
+    console.log(newMessageReceived);
     if (!chat.users) return console.log("chat.users not defined");
 
     chat.users.forEach((user) => {
