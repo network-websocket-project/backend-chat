@@ -5,7 +5,7 @@ const bcrypt = require("bcryptjs");
 
 const registerUser = asyncHandler(async (req, res) => {
   const { nickname, username, password, avatar } = req.body;
-
+  console.log(req.body);
   if (!nickname || !username || !password) {
     res.status(400);
     throw new Error("Please Enter all the Fields");
@@ -104,9 +104,10 @@ const getAllUsers = asyncHandler(async (req, res) => {
 
 const editUser = asyncHandler(async (req, res) => {
   const { nickname } = req.body;
-  const { _id } = req.user.id;
-  const user = await User.findOne({ _id });
+  const { _id } = req.user._id;
+  const user = await User.findById(_id);
   user.nickname = nickname;
+  user.avatar = req.avatar;
   await user.save();
   res.send(user);
 });
