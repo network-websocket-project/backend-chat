@@ -5,13 +5,16 @@ const connectDB = require("./config/db");
 const userRoutes = require("./routes/userRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const messageRoutes = require("./routes/messageRoutes");
+const notiRoutes = require("./routes/notiRoutes");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
+const path = require('path');
 
 const app = express();
 dotenv.config();
 connectDB();
 
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -29,6 +32,7 @@ app.use((req, res, next) => {
 app.use("/api/user", userRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/message", messageRoutes);
+app.use("/api/noti", notiRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
@@ -42,7 +46,7 @@ const server = app.listen(PORT, console.log(`server started on port ${PORT}`));
 const io = require("socket.io")(server, {
   pingTimeout: 60000,
   cors: {
-    origin: "http://localhost:8000",
+    origin: "*",
     // credentials: true,
   },
 });
@@ -51,7 +55,7 @@ io.on("connection", (socket) => {
   console.log("connected to socket.io");
   socket.on("setup", (userData) => {
     socket.join(userData._id);
-    console.log(userData._id);
+    // console.log(userData._id);
     socket.emit("connected");
     users.forEach(user => {
       socket.in(user._id).emit("online", userData);
@@ -72,7 +76,6 @@ io.on("connection", (socket) => {
 
   socket.on("leave chat", (room) => {
     socket.leave(room);
-    console.log(room.length);
     console.log("User Leaved Room: " + room);
   })
 
@@ -80,7 +83,7 @@ io.on("connection", (socket) => {
   socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
   socket.on("new message", (newMessageReceived) => {
     var chat = newMessageReceived.chat;
-    console.log(newMessageReceived);
+    console.log(newMessageReceived,'dasdasdsada');
     if (!chat.users) return console.log("chat.users not defined");
 
     chat.users.forEach((user) => {
@@ -90,8 +93,8 @@ io.on("connection", (socket) => {
     });
   });
 
-  socket.off("setup", () => {
+  socket.on("disconnect", () => {
     console.log("USER DISCONNECTED");
-    socket.leave(userData._id);
+    // socket.leave(userData._id);
   });
 });
