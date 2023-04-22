@@ -63,7 +63,6 @@ const authUser = asyncHandler(async (req, res) => {
   user.isOnline = true;
   await user.save();
   if (user && (await user.matchPassword(password))) {
-    console.log(user);
     res.json({
       id: user._id,
       nickname: user.nickname,

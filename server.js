@@ -42,7 +42,7 @@ const server = app.listen(PORT, console.log(`server started on port ${PORT}`));
 const io = require("socket.io")(server, {
   pingTimeout: 60000,
   cors: {
-    origin: "http://localhost:8000",
+    origin: "*",
     // credentials: true,
   },
 });
@@ -51,7 +51,7 @@ io.on("connection", (socket) => {
   console.log("connected to socket.io");
   socket.on("setup", (userData) => {
     socket.join(userData._id);
-    console.log(userData._id);
+    // console.log(userData._id);
     socket.emit("connected");
   });
 
@@ -62,7 +62,6 @@ io.on("connection", (socket) => {
 
   socket.on("leave chat", (room) => {
     socket.leave(room);
-    console.log(room.length);
     console.log("User Leaved Room: " + room);
   })
 
@@ -70,7 +69,7 @@ io.on("connection", (socket) => {
   socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
   socket.on("new message", (newMessageReceived) => {
     var chat = newMessageReceived.chat;
-    console.log(newMessageReceived);
+    // console.log(newMessageReceived);
     if (!chat.users) return console.log("chat.users not defined");
 
     chat.users.forEach((user) => {
@@ -80,8 +79,8 @@ io.on("connection", (socket) => {
     });
   });
 
-  socket.off("setup", () => {
+  socket.on("disconnect", () => {
     console.log("USER DISCONNECTED");
-    socket.leave(userData._id);
+    // socket.leave(userData._id);
   });
 });
