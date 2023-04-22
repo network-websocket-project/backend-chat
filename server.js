@@ -5,6 +5,7 @@ const connectDB = require("./config/db");
 const userRoutes = require("./routes/userRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const messageRoutes = require("./routes/messageRoutes");
+const notiRoutes = require("./routes/notiRoutes");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 const path = require('path');
 
@@ -31,6 +32,7 @@ app.use((req, res, next) => {
 app.use("/api/user", userRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/message", messageRoutes);
+app.use("/api/noti", notiRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
@@ -71,7 +73,7 @@ io.on("connection", (socket) => {
   socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
   socket.on("new message", (newMessageReceived) => {
     var chat = newMessageReceived.chat;
-    // console.log(newMessageReceived);
+    console.log(newMessageReceived,'dasdasdsada');
     if (!chat.users) return console.log("chat.users not defined");
 
     chat.users.forEach((user) => {
