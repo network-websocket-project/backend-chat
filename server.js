@@ -46,14 +46,24 @@ const io = require("socket.io")(server, {
     // credentials: true,
   },
 });
-
+let users = {};
 io.on("connection", (socket) => {
   console.log("connected to socket.io");
   socket.on("setup", (userData) => {
     socket.join(userData._id);
     console.log(userData._id);
     socket.emit("connected");
+    users.forEach(user => {
+      socket.in(user._id).emit("online", userData);
+    });
+
+    users[socket.id] = users;
+    console.log("alluser:", users);
   });
+
+  socket.on("disconnect", () => {
+    delete users[socket.id];
+  })
 
   socket.on("join chat", (room) => {
     socket.join(room);
