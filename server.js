@@ -56,16 +56,27 @@ io.on("connection", (socket) => {
   socket.on("setup", (userData) => {
     socket.join(userData._id);
     // console.log(userData._id);
-    socket.emit("connected");
-    users.forEach(user => {
-      socket.in(user._id).emit("online", userData);
-    });
-
-    users[socket.id] = users;
-    console.log("alluser:", users);
+    socket.emit("connected", users);
+    // console.log("Server respond handshaking");
+    for (const [key, value] of Object.entries(users)) {
+      // console.log(key, value)
+      socket.in(value._id).emit("online", userData);
+    }
+    users[socket.id] = userData;
+    // console.log("alluser:", users);
   });
 
   socket.on("disconnect", () => {
+    for (const [key, value] of Object.entries(users)) {
+      if (key != socket.id) socket.in(value._id).emit("offline", users[socket.id]);
+    }
+    delete users[socket.id];
+  })
+
+  socket.on("custom disconnect", () => {
+    for (const [key, value] of Object.entries(users)) {
+      if (key != socket.id) socket.in(value._id).emit("offline", users[socket.id]);
+    }
     delete users[socket.id];
   })
 
@@ -83,7 +94,7 @@ io.on("connection", (socket) => {
   socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
   socket.on("new message", (newMessageReceived) => {
     var chat = newMessageReceived.chat;
-    console.log(newMessageReceived,'dasdasdsada');
+    console.log(newMessageReceived, 'dasdasdsada');
     if (!chat.users) return console.log("chat.users not defined");
 
     chat.users.forEach((user) => {

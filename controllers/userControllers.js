@@ -86,11 +86,11 @@ const logout = asyncHandler(async (req, res) => {
 const searchAllUsers = asyncHandler(async (req, res) => {
   const keyword = req.query.keyword
     ? {
-        $or: [
-          { nickname: { $regex: req.query.keyword, $options: "i" } },
-          { username: { $regex: req.query.keyword, $options: "i" } },
-        ],
-      }
+      $or: [
+        { nickname: { $regex: req.query.keyword, $options: "i" } },
+        { username: { $regex: req.query.keyword, $options: "i" } },
+      ],
+    }
     : {};
   console.log(req.user);
   const users = await User.find(keyword).find({ _id: { $ne: req.user._id } });
@@ -104,6 +104,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
 
 const editUser = asyncHandler(async (req, res) => {
   const { nickname } = req.body;
+  console.log(req);
   const { _id } = req.user._id;
   const user = await User.findById(_id);
   user.nickname = nickname;
